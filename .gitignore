@@ -1,0 +1,8 @@
+﻿build/
+dist/
+nbproject/private/
+dishes
+employees
+ingredients
+orders
+positions
