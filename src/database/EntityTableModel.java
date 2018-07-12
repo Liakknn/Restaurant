@@ -1,6 +1,5 @@
 package database;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.TableModelEvent;
@@ -9,19 +8,12 @@ import javax.swing.table.TableModel;
 
 public class EntityTableModel implements TableModel {
 
-    private final Class<? extends Entity> type;
-    private final ArrayList<Field> fields = new ArrayList<>();
+    private final EntityContext ec;
     private final ArrayList<Entity> data = new ArrayList<>();
     private final ArrayList<TableModelListener> listeners = new ArrayList<>();
-    private final Entity temp;
 
-    public EntityTableModel(Class<? extends Entity> entityType) {
-        type = entityType;
-        Iterable<Field> fs = EntityHelper.getFields(entityType);
-        for (Field f : fs) {
-            fields.add(f);
-        }
-        temp = EntityHelper.create(entityType);
+    public EntityTableModel(Manager manager, Class<? extends Entity> entityType) {
+        ec = manager.getEntityContext(entityType);
     }
 
     public void add(Entity e) {
@@ -29,9 +21,9 @@ public class EntityTableModel implements TableModel {
     }
 
     public void add(int index, Entity e) {
-        if (e.getClass() != type) {
+        if (e.getClass() != ec.type) {
             throw new RuntimeException(String.format("Попытка добавления сущности %s в модель, созданную для сущностей %s!",
-                    e.getClass().getCanonicalName(), type.getCanonicalName()));
+                    e.getClass().getCanonicalName(), ec.type.getCanonicalName()));
         }
         data.add(index, e);
         listeners.forEach((TableModelListener l) -> {
@@ -40,9 +32,9 @@ public class EntityTableModel implements TableModel {
     }
 
     public void addAll(int index, Collection<? extends Entity> es) {
-        es.stream().filter((e) -> (e.getClass() != type)).forEachOrdered((e) -> {
+        es.stream().filter((Entity e) -> (e.getClass() != ec.type)).forEachOrdered((Entity e) -> {
             throw new RuntimeException(String.format("Попытка добавления сущности %s в модель, созданную для сущностей %s!",
-                    e.getClass().getCanonicalName(), type.getCanonicalName()));
+                    e.getClass().getCanonicalName(), ec.type.getCanonicalName()));
         });
         data.addAll(index, es);
         listeners.forEach((TableModelListener l) -> {
@@ -77,17 +69,17 @@ public class EntityTableModel implements TableModel {
 
     @Override
     public int getColumnCount() {
-        return fields.size();
+        return ec.fields.size();
     }
 
     @Override
     public String getColumnName(int columnIndex) {
-        return temp.getFieldLocalization(fields.get(columnIndex).getName());
+        return ec.getFieldName(ec.fields.get(columnIndex).getName());
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        return fields.get(columnIndex).getType();
+        return ec.fields.get(columnIndex).getType();
     }
 
     @Override
@@ -99,7 +91,7 @@ public class EntityTableModel implements TableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         try {
             Entity e = data.get(rowIndex);
-            return fields.get(columnIndex).get(e);
+            return ec.fields.get(columnIndex).get(e);
         } catch (IllegalAccessException exc) {
             throw new RuntimeException(exc);
         }

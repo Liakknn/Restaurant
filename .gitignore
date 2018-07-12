@@ -1,9 +1,8 @@
 ﻿build/
 dist/
 nbproject/private/
-dishes
-employees
-ingredients
-orders
-positions
-/build/
+database.restaurant.Dish
+database.restaurant.Employee
+database.restaurant.Ingredient
+database.restaurant.Order
+database.restaurant.Position

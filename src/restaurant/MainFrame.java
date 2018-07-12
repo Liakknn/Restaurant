@@ -264,7 +264,7 @@ public class MainFrame extends javax.swing.JFrame {
             return;
         }
         try {
-            EntityTableModel etm = new EntityTableModel(type);
+            EntityTableModel etm = new EntityTableModel(manager, type);
             etm.addAll(0, manager.get(type));
             table.setModel(etm);
         } catch (IOException exc) {
@@ -284,10 +284,10 @@ public class MainFrame extends javax.swing.JFrame {
             return Ingredient.class;
         }
         if (chooserDishes.getModel().isSelected()) {
-            return null;
+            return Dish.class;
         }
         if (chooserOrders.getModel().isSelected()) {
-            return null;
+            return Order.class;
         }
         return null;
     }

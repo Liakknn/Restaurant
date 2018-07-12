@@ -2,7 +2,7 @@ package database;
 
 public abstract class Entity {
 
-    @EntityField
+    @Storable
     private int id;
 
     public final int getId() {
@@ -12,11 +12,5 @@ public abstract class Entity {
     final void setId(int id) {
         this.id = id;
     }
-
-    public abstract void validateBeforeSave(Manager manager) throws LogicException;
-
-    public abstract void validateBeforeDelete(Manager manager) throws LogicException;
-
-    public abstract String getFieldLocalization(String fieldName);
 
 }
