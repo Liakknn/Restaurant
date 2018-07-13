@@ -1,8 +1,8 @@
 ﻿build/
 dist/
 nbproject/private/
-database.restaurant.Dish
-database.restaurant.Employee
-database.restaurant.Ingredient
-database.restaurant.Order
-database.restaurant.Position
+entities.Dish
+entities.Employee
+entities.Ingredient
+entities.Order
+entities.Position

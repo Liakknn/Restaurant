@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -13,37 +12,51 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
-public class Manager implements Closeable {
+public final class Manager implements Closeable {
 
     private final String path;
-    private final Map<Class<? extends Entity>, EntityContext> entityContexts = new HashMap<>();
-    private final Map<Class<? extends Entity>, RandomAccessFile> files = new HashMap<>();
-    private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-    private DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+    private final Map<Class<? extends Entity>, EntityContext> entityContexts = new HashMap();
+    private final Map<Class<? extends Entity>, RandomAccessFile> files = new HashMap();
+    private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
     public Manager(String path) {
         this.path = path;
     }
 
-    public DateTimeFormatter getDateFormat() {
-        return dateFormat;
+    public DateTimeFormatter getDateFormatter() {
+        return dateFormatter;
     }
 
-    public void setDateFormat(DateTimeFormatter dateFormat) {
-        this.dateFormat = dateFormat;
+    public void setDateFormatter(DateTimeFormatter dateFormat) {
+        this.dateFormatter = dateFormat;
     }
 
-    public DateTimeFormatter getDateTimeFormat() {
-        return dateTimeFormat;
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 
-    public void setDateTimeFormat(DateTimeFormatter dateTimeFormat) {
-        this.dateTimeFormat = dateTimeFormat;
+    public void setDateTimeFormatter(DateTimeFormatter dateTimeFormat) {
+        this.dateTimeFormatter = dateTimeFormat;
+    }
+
+    public EntityContext getEntityContext(Class<? extends Entity> entityType) {
+        EntityContext ec = entityContexts.get(entityType);
+        if (ec == null) {
+            ec = new EntityContext(entityType);
+            entityContexts.put(entityType, ec);
+        }
+        return ec;
+    }
+
+    public Collection<EntityContext> getEntityContexts() {
+        return Collections.unmodifiableCollection(entityContexts.values());
     }
 
     public <E extends Entity> List<E> get(Class<E> entityType) throws IOException {
-        ArrayList<E> result = new ArrayList<>();
+        ArrayList<E> result = new ArrayList();
         EntityContext ec = getEntityContext(entityType);
         RandomAccessFile raf = getFile(entityType);
         raf.seek(0);
@@ -56,26 +69,62 @@ public class Manager implements Closeable {
     }
 
     public <E extends Entity> E get(Class<E> entityType, int id) throws IOException {
-        EntityContext ec = getEntityContext(entityType);
-        RandomAccessFile raf = getFile(entityType);
+        Entity entity = getEntityContext(entityType).create();
+        entity = restore(entity, id);
+        return (E) entity;
+    }
+
+    public Entity restore(Entity entity, int id) throws IOException {
+        EntityContext context = getEntityContext(entity.getClass());
+        RandomAccessFile raf = getFile(context.type);
         int left = 0;
-        int right = (int) ((raf.length() / ec.size) - 1);
-        E e = (E) ec.create();
+        int right = (int) ((raf.length() / context.size) - 1);
         while (right >= left) {
             int i = (right + left) / 2;
-            raf.seek(ec.size * i);
-            ec.read(raf, e);
-            if (e.getId() == id) {
-                raf.seek(ec.size * i);
-                return e;
+            raf.seek(context.size * i);
+            context.read(raf, entity);
+            if (entity.getId() == id) {
+                raf.seek(context.size * i);
+                return entity;
             }
-            if (e.getId() < id) {
+            if (entity.getId() < id) {
                 left = i + 1;
             } else {
                 right = i - 1;
             }
         }
         return null;
+    }
+
+    public Entity searchFirst(Class<? extends Entity> entityType, Predicate<Entity> predicate) throws IOException {
+
+        EntityContext context = getEntityContext(entityType);
+        RandomAccessFile raf = getFile(entityType);
+        Entity entity = context.create();
+        raf.seek(0);
+        for (int i = 0; i < raf.length() / context.size; i++) {
+            context.read(raf, entity);
+            if (predicate.test(entity)) {
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    public List<Entity> searchAll(Class<? extends Entity> entityType, Predicate<Entity> predicate) throws IOException {
+        ArrayList<Entity> list = new ArrayList();
+        EntityContext context = getEntityContext(entityType);
+        RandomAccessFile raf = getFile(entityType);
+        Entity entity = context.create();
+        raf.seek(0);
+        for (int i = 0; i < raf.length() / context.size; i++) {
+            context.read(raf, entity);
+            if (predicate.test(entity)) {
+                list.add(entity);
+                entity = context.create();
+            }
+        }
+        return list;
     }
 
     public void save(Entity e) throws IOException, LogicException {
@@ -115,21 +164,22 @@ public class Manager implements Closeable {
         ec.write(raf, e);
     }
 
-    public void delete(Entity e) throws IOException, LogicException {
-        EntityContext ec = getEntityContext(e.getClass());
-        RandomAccessFile raf = getFile(ec.type);
-        ec.validateBeforeDelete(this, e);
-        if (get(ec.type, e.getId()) == null) {
-            throw new LogicException(String.format("Удаляемая сущность с идентификатором %d не найдена!", e.getId()));
+    public void delete(Class<? extends Entity> entityType, int id) throws IOException, LogicException {
+        EntityContext context = getEntityContext(entityType);
+        RandomAccessFile raf = getFile(context.type);
+        Entity entity = get(entityType, id);
+        context.validateBeforeDelete(this, entity);
+        if (get(context.type, entity.getId()) == null) {
+            throw new LogicException(String.format("Удаляемая сущность с идентификатором %d не найдена!", entity.getId()));
         }
-        Entity t = ec.create();
-        for (int i = (int) (raf.getFilePointer() / ec.size); i < (int) (raf.length() / ec.size) - 1; ++i) {
-            raf.seek(ec.size * (i + 1));
-            ec.read(raf, t);
-            raf.seek(ec.size * i);
-            ec.write(raf, t);
+        Entity t = context.create();
+        for (int i = (int) (raf.getFilePointer() / context.size); i < (int) (raf.length() / context.size) - 1; ++i) {
+            raf.seek(context.size * (i + 1));
+            context.read(raf, t);
+            raf.seek(context.size * i);
+            context.write(raf, t);
         }
-        raf.setLength(raf.length() - ec.size);
+        raf.setLength(raf.length() - context.size);
     }
 
     @Override
@@ -140,44 +190,13 @@ public class Manager implements Closeable {
         files.clear();
     }
 
-    EntityContext getEntityContext(Class<? extends Entity> entityType) {
-        EntityContext ec = entityContexts.get(entityType);
-        if (ec == null) {
-            ec = new EntityContext(entityType);
-            entityContexts.put(entityType, ec);
-        }
-        return ec;
-    }
-
-    Collection<EntityContext> getEntityContexts() {
-        return Collections.unmodifiableCollection(entityContexts.values());
-    }
-
-    RandomAccessFile getFile(Class<? extends Entity> entityType) throws FileNotFoundException {
+    private RandomAccessFile getFile(Class<? extends Entity> entityType) throws FileNotFoundException {
         RandomAccessFile raf = files.get(entityType);
         if (raf == null) {
             raf = new RandomAccessFile(Paths.get(path, entityType.getCanonicalName()).toString(), "rw");
             files.put(entityType, raf);
         }
         return raf;
-    }
-
-    Entity search(Class<? extends Entity> entityType, Field f, Object value) throws IOException {
-        EntityContext ec = getEntityContext(entityType);
-        RandomAccessFile raf = getFile(entityType);
-        Entity e = ec.create();
-        raf.seek(0);
-        try {
-            for (int i = 0; i < raf.length() / ec.size; i++) {
-                ec.read(raf, e);
-                if (f.get(e).equals(value)) {
-                    return e;
-                }
-            }
-        } catch (IllegalAccessException exc) {
-            throw new RuntimeException(exc);
-        }
-        return null;
     }
 
     private int getNewId(Class<? extends Entity> entityType) throws IOException, LogicException {
