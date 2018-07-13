@@ -245,7 +245,7 @@ public class MainFrame extends javax.swing.JFrame {
             editor.setLocationRelativeTo(this);
             editor.setVisible(true);
             if (editor.getResult() != null) {
-                ((EntityTableModel) table.getModel()).update(table.getSelectedRow());
+                model.update(table.getSelectedRow());
             }
         } catch (IllegalAccessException | IOException exc) {
             JOptionPane.showMessageDialog(this, "Не удалось открыть редактор сущности!", "Ошибка", JOptionPane.ERROR_MESSAGE);

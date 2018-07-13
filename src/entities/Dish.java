@@ -31,7 +31,7 @@ public class Dish extends Entity {
     private double price;
 
     @Storable(order = 8)
-    private LocalDateTime cookingTime;
+    private int cookingTime;
 
     public String getName() {
         return name;
@@ -97,11 +97,11 @@ public class Dish extends Entity {
         this.price = price;
     }
 
-    public LocalDateTime getCookingTime() {
+    public int getCookingTime() {
         return cookingTime;
     }
 
-    public void setCookingTime(LocalDateTime cookingTime) {
+    public void setCookingTime(int cookingTime) {
         this.cookingTime = cookingTime;
     }
 

@@ -97,7 +97,6 @@ public final class Manager implements Closeable {
     }
 
     public Entity searchFirst(Class<? extends Entity> entityType, Predicate<Entity> predicate) throws IOException {
-
         EntityContext context = getEntityContext(entityType);
         RandomAccessFile raf = getFile(entityType);
         Entity entity = context.create();

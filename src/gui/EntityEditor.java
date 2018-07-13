@@ -241,7 +241,7 @@ public final class EntityEditor extends javax.swing.JDialog {
                             context.setValue(entity, f, LocalDateTime.parse(s, manager.getDateTimeFormatter()));
                         } catch (DateTimeParseException exc) {
                             throw new LogicException("Неправильный формат времени для поля \"%s\". Пример правильного формата: %s.",
-                                    context.getFieldName(f), LocalDate.now().format(manager.getDateTimeFormatter()));
+                                    context.getFieldName(f), LocalDateTime.now().format(manager.getDateTimeFormatter()));
                         }
                     }
                 } else if (t == int.class && key != Entity.class) {

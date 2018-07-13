@@ -117,8 +117,10 @@ public final class EntityContext {
         for (Field f : fields) {
             Class<? extends Entity> key = f.getAnnotation(Storable.class).key();
             if (key != Entity.class && manager.get(key, (int) getValue(entity, f)) == null) {
-                throw new LogicException(String.format("Поле \"%s\" ссылается на несуществующую сущность \"%s\" с идентификатором \"%d\"!",
-                        getFieldName(f), manager.getEntityContext(key).getSingularName(), getValue(entity, f)));
+                if ((int) getValue(entity, f) != 0) {
+                    throw new LogicException(String.format("Поле \"%s\" ссылается на несуществующую сущность \"%s\" с идентификатором \"%d\"!",
+                            getFieldName(f), manager.getEntityContext(key).getSingularName(), getValue(entity, f)));
+                }
             }
         }
     }
@@ -170,7 +172,6 @@ public final class EntityContext {
                 Method setMethod = type.getMethod(setMethodName, f.getType());
                 setMethod.invoke(entity, value);
             }
-
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException exc) {
             throw new RuntimeException(exc);
         }
