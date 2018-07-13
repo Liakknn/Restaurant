@@ -60,8 +60,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Ресторан");
-        setMinimumSize(new java.awt.Dimension(800, 600));
-        setPreferredSize(new java.awt.Dimension(600, 400));
+        setMinimumSize(new java.awt.Dimension(800, 500));
+        setPreferredSize(new java.awt.Dimension(800, 500));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -168,18 +168,18 @@ public class MainFrame extends javax.swing.JFrame {
 
         menuQueries.setText("Запросы");
         menuQueries.setEnabled(false);
-        menuQueries.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuQueriesActionPerformed(evt);
+        menuQueries.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                menuQueriesMouseClicked(evt);
             }
         });
         menu.add(menuQueries);
 
         menuFilters.setText("Фильтры");
         menuFilters.setEnabled(false);
-        menuFilters.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuFiltersActionPerformed(evt);
+        menuFilters.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                menuFiltersMouseClicked(evt);
             }
         });
         menu.add(menuFilters);
@@ -225,14 +225,6 @@ public class MainFrame extends javax.swing.JFrame {
         menuFileCloseActionPerformed(null);
         dispose();
     }//GEN-LAST:event_menuFileExitActionPerformed
-
-    private void menuQueriesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuQueriesActionPerformed
-
-    }//GEN-LAST:event_menuQueriesActionPerformed
-
-    private void menuFiltersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuFiltersActionPerformed
-
-    }//GEN-LAST:event_menuFiltersActionPerformed
 
     private void tableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableMouseClicked
         if (evt.getClickCount() != 2 || table.getSelectedRow() == -1 || !(table.getModel() instanceof EntityTableModel)) {
@@ -288,6 +280,18 @@ public class MainFrame extends javax.swing.JFrame {
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         menuFileCloseActionPerformed(null);
     }//GEN-LAST:event_formWindowClosing
+
+    private void menuQueriesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuQueriesMouseClicked
+        QueryDialog dlg = new QueryDialog(this, manager);
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+    }//GEN-LAST:event_menuQueriesMouseClicked
+
+    private void menuFiltersMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuFiltersMouseClicked
+        FilterDialog dlg = new FilterDialog(this, manager);
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+    }//GEN-LAST:event_menuFiltersMouseClicked
 
     private void openProject(String path) {
         menuFileCloseActionPerformed(null);
@@ -362,7 +366,14 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     private static void setLocalization(Manager manager) {
-        setLocalization(manager, Employee.class, null, null);
+        setLocalization(manager, Employee.class, "Сотрудник", "Сотрудники",
+                "database.Entity.id", "Идентификатор",
+                "entities.Employee.name", "ФИО",
+                "entities.Employee.birthday", "Дата рождения",
+                "entities.Employee.male", "Пол (М)");
+        setLocalization(manager, Position.class, "Должность", "Должности",
+                "database.Entity.id", "Идентификатор",
+                "entities.Position.name", "Название");
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

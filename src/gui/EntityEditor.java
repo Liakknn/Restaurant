@@ -108,7 +108,7 @@ public final class EntityEditor extends javax.swing.JDialog {
         for (int i = 0; i < context.fields.size(); ++i, ++row) {
             Field f = context.fields.get(i);
             // Добавление подписи
-            JLabel label = new JLabel(context.getFieldName(f));
+            JLabel label = new JLabel(context.getFieldName(f) + ":");
             GridBagConstraints labelConstraints = new GridBagConstraints(0, row, 1, 1, 0, 0,
                     GridBagConstraints.EAST, GridBagConstraints.NONE,
                     new Insets(1, 10, 1, 5), 0, 0);
@@ -135,7 +135,7 @@ public final class EntityEditor extends javax.swing.JDialog {
                 component = c;
             } else if (t == LocalDateTime.class) {
                 JTextField c = new JTextField();
-                c.setPreferredSize(new Dimension(100, c.getPreferredSize().height));
+                c.setPreferredSize(new Dimension(150, c.getPreferredSize().height));
                 LocalDateTime value = (LocalDateTime) context.getValue(entity, f);
                 if (value != null) {
                     c.setText(value.format(manager.getDateTimeFormatter()));

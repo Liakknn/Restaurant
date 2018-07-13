@@ -3,6 +3,9 @@ package gui;
 import database.Entity;
 import database.EntityContext;
 import database.Manager;
+import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.TableModelEvent;
@@ -11,12 +14,14 @@ import javax.swing.table.TableModel;
 
 public class EntityTableModel implements TableModel {
 
+    private final Manager manager;
     private final EntityContext context;
     private final ArrayList<Entity> data = new ArrayList();
     private final ArrayList<TableModelListener> listeners = new ArrayList();
 
     public EntityTableModel(Manager manager, Class<? extends Entity> entityType) {
-        context = manager.getEntityContext(entityType);
+        this.manager = manager;
+        this.context = manager.getEntityContext(entityType);
     }
 
     public void add(Entity e) {
@@ -100,7 +105,15 @@ public class EntityTableModel implements TableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return context.getValue(data.get(rowIndex), context.fields.get(columnIndex));
+        Field f = context.fields.get(columnIndex);
+        Object value = context.getValue(data.get(rowIndex), f);
+        if (value != null && f.getType() == LocalDate.class) {
+            return ((LocalDate) value).format(manager.getDateFormatter());
+        } else if (value != null && f.getType() == LocalDateTime.class) {
+            return ((LocalDateTime) value).format(manager.getDateTimeFormatter());
+        } else {
+            return value;
+        }
     }
 
     @Override
