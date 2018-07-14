@@ -240,7 +240,7 @@ public final class EntityContext {
                 while (count > 0 && data[count] == 0) {
                     --count;
                 }
-                setValue(entity, f, new String(data, 0, count, StandardCharsets.UTF_8));
+                setValue(entity, f, new String(data, 0, count + 1, StandardCharsets.UTF_8));
             } else if (f.getType() == LocalDate.class) {
                 LocalDate value = LocalDate.ofEpochDay(raf.readLong());
                 if (value.equals(LocalDate.MIN)) {
