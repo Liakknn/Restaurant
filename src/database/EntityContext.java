@@ -237,7 +237,7 @@ public final class EntityContext {
                     throw new IOException();
                 }
                 int count = data.length - 1;
-                while (count > 0 && data[count] != 0) {
+                while (count > 0 && data[count] == 0) {
                     --count;
                 }
                 setValue(entity, f, new String(data, 0, count, StandardCharsets.UTF_8));
