@@ -370,10 +370,49 @@ public class MainFrame extends javax.swing.JFrame {
                 "database.Entity.id", "Идентификатор",
                 "entities.Employee.name", "ФИО",
                 "entities.Employee.birthday", "Дата рождения",
-                "entities.Employee.male", "Пол (М)");
+                "entities.Employee.male", "Пол (М)",
+                "entities.Employee.address", "Адрес",
+                "entities.Employee.phone", "Телефон",
+                "entities.Employee.passport", "Паспорт",
+                "entities.Employee.positionId", "Код должности");
         setLocalization(manager, Position.class, "Должность", "Должности",
                 "database.Entity.id", "Идентификатор",
-                "entities.Position.name", "Название");
+                "entities.Position.name", "Название",
+                "entities.Position.salary", "Оклад",
+                "entities.Position.duties", "Обязанности",
+                "entities.Position.demands", "Требования");
+        setLocalization(manager, Ingredient.class, "Ингредиент", "Ингредиенты",
+                "database.Entity.id", "Идентификатор",
+                "entities.Ingredient.name", "Название",
+                "entities.Ingredient.productionDate", "Дата производства",
+                "entities.Ingredient.expirationDate", "Годен до",
+                "entities.Ingredient.quantity", "Объем",
+                "entities.Ingredient.price", "Стоимость",
+                "entities.Ingredient.provider", "Поставщик");
+        setLocalization(manager, Dish.class, "Блюдо", "Блюда",
+                "database.Entity.id", "Идентификатор",
+                "entities.Dish.name", "Название",
+                "entities.Dish.ingreadientId1", "Ингпредиент 1",
+                "entities.Dish.ingredientQuantity1", "Объем ингредиента 1",
+                "entities.Dish.ingreadientId2", "Ингпредиент 2",
+                "entities.Dish.ingredientQuantity2", "Объем ингредиента 2",
+                "entities.Dish.ingreadientId3", "Ингпредиент 3",
+                "entities.Dish.ingredientQuantity3", "Объем ингредиента 3",
+                "entities.Dish.price", "Стоимость",
+                "entities.Dish.cookingTime", "Время приготовления(мин)");
+        setLocalization(manager, Order.class, "Заказ", "Заказы",
+                "database.Entity.id", "Идентификатор",
+                "entities.Order.name", "Название",
+                "database.Order.orderTime", "Время заказа",
+                "database.Order.clientName", "ФИО",
+                "database.Order.phone", "Телефон",
+                "database.Order.dishId1", "Блюдо 1",
+                "database.Order.dishId2", "Блюдо2",
+                "database.Order.dishId3", "Блюдо3",
+                "database.Order.price", "Стоимость",
+                "database.Order.completed", "Выполнение",
+                "database.Order.employeeId", "Сотрудник");
+
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
