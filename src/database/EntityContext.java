@@ -166,7 +166,7 @@ public final class EntityContext {
                         f.getDeclaringClass().getCanonicalName(), f.getName(), type.getCanonicalName()));
             }
             if (f == fields.get(0)) {
-                entity.setId((int) value);
+                throw new IllegalAccessException(String.format("Поле %s не доступно для установки.", f.getName()));
             } else {
                 String setMethodName = "set" + Character.toUpperCase(f.getName().charAt(0)) + f.getName().substring(1);
                 Method setMethod = type.getMethod(setMethodName, f.getType());
@@ -221,7 +221,9 @@ public final class EntityContext {
     public void read(RandomAccessFile raf, Entity entity) throws IOException {
         checkEntityType(entity);
         for (Field f : fields) {
-            if (f.getType() == int.class) {
+            if (f == fields.get(0)) {
+                entity.setId(raf.readInt());
+            } else if (f.getType() == int.class) {
                 setValue(entity, f, raf.readInt());
             } else if (f.getType() == long.class) {
                 setValue(entity, f, raf.readLong());
